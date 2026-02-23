@@ -1,0 +1,16 @@
+{
+  "name": "@bb/shared-types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types for BetterBlood",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

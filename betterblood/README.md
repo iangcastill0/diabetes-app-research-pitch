@@ -1,205 +1,208 @@
-# BetterBlood (BB)
+# BetterBlood - Diabetes Management Application
 
-**FDA-aligned diabetes management with intelligent insulin dosing and AI lifestyle coaching**
+BetterBlood (BB) is an FDA-aligned diabetes management platform with intelligent insulin dosing and AI lifestyle coaching. Built with enterprise-grade architecture, HIPAA compliance, and timeless design.
 
-Enterprise-grade, scalable diabetes management application built with clean architecture, timeless design, and clinical-grade reliability.
+## Quick Start
 
----
+### Prerequisites
 
-## Core Features
+- Node.js 20+
+- Docker & Docker Compose
+- PostgreSQL 16 (with TimescaleDB extension)
+- Redis 7
 
-### 🩸 Real-Time CGM Integration
-- Multi-device support (Dexcom, FreeStyle Libre, Guardian Connect)
-- Live glucose readings every 1-5 minutes
-- Trend analysis and predictive alerts
+### Local Development
 
-### 🍽️ Intelligent Carb Management
-- 5M+ food database with barcode scanning
-- AI-powered meal photo analysis
-- Custom carb absorption rates
+```bash
+# Clone and setup
+git clone https://github.com/betterblood/betterblood.git
+cd betterblood
+npm install
 
-### 💉 FDΛ-Cleared Insulin Calculator
-- Clinical-grade dosing algorithms
-- Personalized insulin-to-carb ratios
-- Insulin on Board (IOB) tracking
-- Safety guardrails and dose verification
+# Start infrastructure
+docker-compose -f infrastructure/docker/docker-compose.yml up -d
 
-### 🎯 AI Health Coach
-Beyond insulin: evidence-based lifestyle recommendations
-- Pre-meal optimization
-- Exercise timing
-- Stress management
-- Sleep pattern analysis
+# Run database migrations
+npm run db:migrate
 
----
+# Seed test data
+npm run db:seed
+
+# Start all services
+npm run dev
+
+# In another terminal, start mobile app
+cd apps/mobile
+npm install
+npm run ios  # or npm run android
+```
+
+## Architecture
+
+### Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Mobile | React Native 0.73 |
+| Backend | Node.js 20 + TypeScript |
+| Database | PostgreSQL 16 + TimescaleDB |
+| Cache | Redis 7 |
+| Gateway | Kong API Gateway |
+| Infrastructure | AWS EKS + Terraform |
+
+### Services
+
+- **Auth Service** (Port 3001) - JWT/OAuth2 authentication, MFA support
+- **CGM Service** (Port 3002/3003) - Continuous glucose monitoring, WebSocket real-time
+- **Food Service** (Port 3004) - Food database, meal logging
+- **Insulin Service** (Phase 2) - FDA-regulated dosing calculations
+- **Lifestyle Service** (Phase 2) - AI coaching and pattern detection
 
 ## Project Structure
 
 ```
 betterblood/
-├── backend/                      # Backend services
-│   ├── api-gateway/              # API Gateway (Kong/Nginx)
-│   ├── auth-service/             # Authentication microservice
-│   ├── cgm-service/              # CGM data ingestion service
-│   ├── insulin-service/          # FDA-regulated dosing calculator
-│   ├── lifestyle-service/          # AI coaching recommendations
-│   └── notification-service/       # Push alerts & notifications
-├── database/                     # Database definitions
-│   ├── migrations/               # Schema migrations
-│   └── seed-data/                # Test data
-├── frontend/                     # Mobile applications
-│   ├── mobile/                   # React Native mobile app
-│   └── web-dashboard/            # Healthcare provider dashboard
-├── infrastructure/               # DevOps & infrastructure
-│   ├── terraform/                # Infrastructure as Code
-│   ├── kubernetes/               # K8s manifests
-│   └── monitoring/               # Prometheus, Grafana, etc.
-├── compliance/                   # FDA & regulatory
-│   ├── 510k/                     # FDA submission documents
-│   ├── risk-analysis/            # ISO 14971 risk management
-│   └── clinical-validation/      # Clinical study protocols
-└── docs/                       # Documentation
-    ├── architecture/             # System architecture diagrams
-    ├── api-spec/               # OpenAPI specifications
-    └── user-guides/              # End-user documentation
+├── apps/
+│   └── mobile/              # React Native application
+├── services/
+│   ├── auth-service/        # Authentication microservice
+│   ├── cgm-service/         # CGM data microservice
+│   └── food-service/        # Food database microservice
+├── packages/
+│   ├── shared-types/        # Shared TypeScript types
+│   ├── database/            # Database client and migrations
+│   └── config/              # Environment configuration
+├── infrastructure/
+│   ├── terraform/           # AWS infrastructure (EKS, RDS, ElastiCache)
+│   ├── kubernetes/          # K8s manifests
+│   └── docker/              # Local development Docker Compose
+└── .github/workflows/       # CI/CD pipelines
 ```
 
----
+## API Documentation
 
-## Technology Stack
+### Authentication
 
-| Layer | Technology | Rationale |
-|-------|-----------|-----------|
-| **Frontend** | React Native | Cross-platform, native performance, large ecosystem |
-| **Backend** | Node.js + TypeScript | Strong typing, FDA-traceable, enterprise-grade |
-| **Database** | PostgreSQL + TimescaleDB | ACID compliance, time-series optimization for CGM |
-| **Cache** | Redis | High-speed glucose data caching |
-| **Search** | Elasticsearch | Food database and pattern search |
-| **Queue** | Redis Bull | Background job processing |
-| **API Gateway** | Kong | Rate limiting, auth, API versioning |
-| **Messaging** | WebSockets (Socket.io) | Real-time CGM data streaming |
-| **Infrastructure** | AWS / Terraform | Scalable, HIPAA-compliant cloud |
-| **Monitoring** | Prometheus + Grafana | Medical device-grade observability |
-| **Logging** | ELK Stack (Elasticsearch) | Audit trail for FDA compliance |
+```http
+POST /api/v1/auth/login
+Content-Type: application/json
 
----
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
 
-## Getting Started
+### CGM Data
 
-### Prerequisites
-- Node.js 20+
-- Docker & Docker Compose
-- Terraform 1.0+
-- AWS CLI (configured)
+```http
+GET /api/v1/cgm/current
+Authorization: Bearer {token}
+
+GET /api/v1/cgm/history?hours=24
+Authorization: Bearer {token}
+```
+
+## Database Schema
+
+### Core Tables
+
+- `users` - User accounts with profile and settings
+- `cgm_readings` - Time-series glucose data (TimescaleDB hypertable)
+- `insulin_doses` - FDA-tracked insulin calculations
+- `food_items` - Nutritional food database
+- `meal_logs` - User meal records
+- `lifestyle_recommendations` - AI coaching suggestions
+- `audit_logs` - HIPAA compliance audit trail
+
+## Security
+
+- End-to-end encryption (TLS 1.3)
+- HIPAA-compliant infrastructure
+- JWT authentication with refresh tokens
+- MFA support
+- Role-based access control
+- Encrypted data at rest (AES-256)
+
+## Deployment
+
+### AWS (Production)
+
+```bash
+cd infrastructure/terraform
+
+# Initialize
+terraform init
+
+# Plan changes
+terraform plan -var-file=environments/production.tfvars
+
+# Deploy
+terraform apply -var-file=environments/production.tfvars
+
+# Configure kubectl
+aws eks update-kubeconfig --name betterblood-production
+
+# Deploy services
+kubectl apply -k infrastructure/kubernetes/
+```
 
 ### Local Development
 
 ```bash
-# Clone repository
-git clone https://github.com/iangcastill0/diabetes-app-research-pitch-cd betterblood && cd betterblood
+# Start all services
+docker-compose up
 
-# Install dependencies
-cd frontend/mobile && npm install
-cd ../../backend && npm install
-
-# Start local infrastructure
-docker-compose -f infrastructure/docker-compose.dev.yml up -d
-
-# Run database migrations
-cd backend && npm run db:migrate
-
-# Start backend services
-npm run dev:services
-
-# Run frontend
-cd frontend/mobile && npm run ios  # or npm run android
+# Individual services
+cd services/auth-service && npm run dev
+cd services/cgm-service && npm run dev
+cd services/food-service && npm run dev
 ```
 
----
+## Testing
 
-## FDA Compliance & Safety
+```bash
+# Run all tests
+npm test
 
-**Current Regulatory Pathway:** 510(k) Premarket Notification (Class II)
+# Unit tests for specific service
+npm test --workspace=services/auth-service
 
-**Quality Management System:** ISO 13485 compliant
+# Integration tests
+npm run test:integration
 
-**Risk Management:** ISO 14971 systematic risk analysis
+# End-to-end tests
+cd apps/mobile && npm run test:e2e
+```
 
-**Software Development Lifecycle:** IEC 62304 compliant
+## Compliance
 
-**Clinical Validation:** Ongoing prospective studies
-
-**Post-Market Surveillance:** Real-world evidence collection
-
----
-
-## Scalability Architecture
-
-**Horizontal Scaling:** Microservices architecture with independent scaling
-
-**Data Partitioning:** User-based sharding for CGM time-series data
-
-**Caching Strategy:** Multi-level cache (CDN → Redis → Database)
-
-**Load Balancing:** Application and database levels
-
-**Auto-scaling:** Based on CPU, memory, and queue depth metrics
-
-**Performance Targets:**
-- 95th percentile API latency < 200ms
-- CGM data ingestion: 10,000 events/second
-- Support for 1M+ concurrent users
-- 99.9% uptime SLA
-
----
-
-## Cost Structure (Estimated)
-
-| Users | Infrastructure/Month | Notes |
-|-------|---------------------|-------|
-| 1,000 | $500 | Development tier |
-| 10,000 | $2,500 | Growth tier |
-| 100,000 | $15,000 | Scale tier |
-| 1,000,000 | $80,000 | Enterprise tier |
-
----
-
-## Team & Development
-
-**Current Phase:** Pre-FDA (MVP Development)
-
-**Core Team:**
-- 2 Backend Engineers (FDA experience)
-- 1 Frontend Engineer
-- 1 DevOps Engineer
-- 1 QA/Regulatory Specialist
-- 1 Endocrinologist Advisor
-- 1 Product Manager
-
-**Timeline:**
-- MVP (Non-dosing features): 3 months
-- FDA 510(k) Submission: 12-18 months
-- Full Launch: 18-24 months
-
----
+- **FDA 510(k)** pathway documented for insulin dosing
+- **HIPAA** compliant infrastructure and data handling
+- **ISO 13485** quality management system ready
+- **ISO 14971** risk management documentation
 
 ## Documentation
 
 - [System Architecture](./docs/architecture/system-architecture.md)
-- [API Documentation](./docs/api-spec/openapi.yaml)
-- [FDA Submission Tracker](./compliance/510k/submission-tracker.md)
+- [API Reference](./docs/api/openapi.yaml)
 - [Deployment Guide](./infrastructure/DEPLOYMENT.md)
+- [FDA Compliance](./compliance/fda/510k-requirements.md)
 
----
+## Contributing
 
-## License & Disclaimer
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-**License:** Proprietary (commercial medical device)
+## License
 
-**FDA Disclaimer:** This application is subject to FDA 510(k) clearance. Not yet approved for clinical use.
+Proprietary - BetterBlood Inc.
 
-**Medical Disclaimer:** Information provided is for educational purposes only and does not replace professional medical advice. Always consult healthcare providers before making treatment decisions.
+## Support
 
----
-
-*BetterBlood - Engineering Excellence in Diabetes Management*
+- Email: support@betterblood.io
+- Documentation: https://docs.betterblood.io
+- Status: https://status.betterblood.io

@@ -1,0 +1,45 @@
+{
+  "name": "betterblood",
+  "version": "0.1.0",
+  "description": "BetterBlood - FDA-aligned diabetes management with intelligent insulin dosing",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "docker-compose -f infrastructure/docker/docker-compose.yml up -d && npm run dev:services",
+    "dev:services": "concurrently \"npm run dev --workspace=services/auth-service\" \"npm run dev --workspace=services/cgm-service\" \"npm run dev --workspace=services/food-service\" \"npm run dev --workspace=services/notification-service\"",
+    "build": "npm run build --workspaces",
+    "test": "npm test --workspaces",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "db:migrate": "npm run migrate --workspace=packages/database",
+    "db:seed": "npm run seed --workspace=packages/database",
+    "mobile": "npm run start --workspace=apps/mobile",
+    "infra:init": "cd infrastructure/terraform && terraform init",
+    "infra:plan": "cd infrastructure/terraform && terraform plan",
+    "infra:apply": "cd infrastructure/terraform && terraform apply"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.2.4",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/betterblood/betterblood.git"
+  },
+  "license": "PROPRIETARY"
+}

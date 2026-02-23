@@ -1,0 +1,196 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: timescale/timescaledb:latest-pg16
+    container_name: bb-postgres
+    environment:
+      POSTGRES_USER: betterblood
+      POSTGRES_PASSWORD: betterblood
+      POSTGRES_DB: betterblood
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U betterblood"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - betterblood-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: bb-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - betterblood-network
+
+  # API Gateway (Kong)
+  kong:
+    image: kong:3.5
+    container_name: bb-kong
+    environment:
+      KONG_DATABASE: 'off'
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    volumes:
+      - ./kong/declarative:/kong/declarative
+    networks:
+      - betterblood-network
+    depends_on:
+      - auth-service
+      - cgm-service
+      - food-service
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ../..
+      dockerfile: services/auth-service/Dockerfile
+    container_name: bb-auth-service
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: betterblood
+      DB_USER: betterblood
+      DB_PASSWORD: betterblood
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-jwt-secret-do-not-use-in-production
+      LOG_LEVEL: debug
+    ports:
+      - "3001:3001"
+    volumes:
+      - ../../services/auth-service:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - betterblood-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # CGM Service
+  cgm-service:
+    build:
+      context: ../..
+      dockerfile: services/cgm-service/Dockerfile
+    container_name: bb-cgm-service
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: betterblood
+      DB_USER: betterblood
+      DB_PASSWORD: betterblood
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-jwt-secret-do-not-use-in-production
+      LOG_LEVEL: debug
+    ports:
+      - "3002:3002"
+    volumes:
+      - ../../services/cgm-service:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - betterblood-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Food Service
+  food-service:
+    build:
+      context: ../..
+      dockerfile: services/food-service/Dockerfile
+    container_name: bb-food-service
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: betterblood
+      DB_USER: betterblood
+      DB_PASSWORD: betterblood
+      JWT_SECRET: dev-jwt-secret-do-not-use-in-production
+      LOG_LEVEL: debug
+    ports:
+      - "3003:3003"
+    volumes:
+      - ../../services/food-service:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - betterblood-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ../..
+      dockerfile: services/notification-service/Dockerfile
+    container_name: bb-notification-service
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: betterblood
+      DB_USER: betterblood
+      DB_PASSWORD: betterblood
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-jwt-secret-do-not-use-in-production
+      LOG_LEVEL: debug
+    ports:
+      - "3004:3004"
+    volumes:
+      - ../../services/notification-service:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - betterblood-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  betterblood-network:
+    driver: bridge
