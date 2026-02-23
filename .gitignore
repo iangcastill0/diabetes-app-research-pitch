@@ -1,0 +1,35 @@
+# OpenClaw workspace - private configuration
+.openclaw/
+.clawhub/
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Runtime
+.playwright-browsers/
+openclaw/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+.cache/
