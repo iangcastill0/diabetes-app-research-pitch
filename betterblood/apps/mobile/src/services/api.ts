@@ -81,6 +81,27 @@ export const authApi = {
     apiClient.post('/api/v1/users/change-password', { currentPassword, newPassword }),
 };
 
+// Food API
+export const foodApi = {
+  searchFoods: (query: string) =>
+    apiClient.get(`/api/v1/food/search?q=${encodeURIComponent(query)}`),
+
+  logMeal: (data: { foods: Array<{ name: string; carbs: number }>; totalCarbs: number }) =>
+    apiClient.post('/api/v1/meals', data),
+
+  getMeals: (limit: number = 20) =>
+    apiClient.get(`/api/v1/meals?limit=${limit}`),
+};
+
+// Insulin API
+export const insulinApi = {
+  logDose: (data: { units: number; carbDose: number; correctionDose: number; glucoseAtTime: number }) =>
+    apiClient.post('/api/v1/insulin/doses', data),
+
+  getHistory: (limit: number = 20) =>
+    apiClient.get(`/api/v1/insulin/doses?limit=${limit}`),
+};
+
 // CGM API
 export const cgmApi = {
   getCurrentReading: () => apiClient.get('/api/v1/cgm/current'),

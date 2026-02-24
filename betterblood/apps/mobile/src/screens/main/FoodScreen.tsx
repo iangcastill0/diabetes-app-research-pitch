@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,32 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useAuthStore } from '../../store/authStore';
+import { foodApi } from '../../services/api';
 
 export const FoodScreen = (): React.JSX.Element => {
   const { theme } = useTheme();
+  const navigation = useNavigation();
+  const logMeal = useAuthStore((s) => s.logMeal);
+  const mealLogs = useAuthStore((s) => s.mealLogs);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFoods, setSelectedFoods] = useState<Array<{ name: string; carbs: number }>>([]);
   const [totalCarbs, setTotalCarbs] = useState(0);
+
+  // Reset form when navigating away
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setSelectedFoods([]);
+        setTotalCarbs(0);
+        setSearchQuery('');
+      };
+    }, []),
+  );
 
   const quickAddFoods = [
     { name: 'Apple', carbs: 25, icon: 'food-apple' },
@@ -38,31 +56,50 @@ export const FoodScreen = (): React.JSX.Element => {
     setTotalCarbs(totalCarbs - removed.carbs);
   };
 
-  const saveMeal = () => {
+  const saveMeal = async () => {
     if (selectedFoods.length === 0) {
       Alert.alert('Error', 'Please add at least one food item');
       return;
     }
 
-    Alert.alert(
-      'Meal Saved',
-      `Total carbs: ${totalCarbs}g`,
-      [{ text: 'OK' }]
-    );
+    // Persist locally
+    logMeal({ foods: selectedFoods, totalCarbs });
 
-    // Reset
+    // Attempt backend sync (non-blocking)
+    foodApi.logMeal({ foods: selectedFoods, totalCarbs }).catch(() => {});
+
     setSelectedFoods([]);
     setTotalCarbs(0);
     setSearchQuery('');
+
+    Alert.alert('Meal Saved', `${totalCarbs}g carbs logged.`, [{ text: 'OK' }]);
   };
+
+  const calculateBolus = () => {
+    if (totalCarbs === 0) {
+      Alert.alert('No carbs', 'Add food items first.');
+      return;
+    }
+    navigation.navigate('BolusCalculator' as never, { carbs: totalCarbs } as never);
+  };
+
+  // Today's meals
+  const today = new Date().toDateString();
+  const todayMeals = mealLogs.filter(
+    (m) => new Date(m.timestamp).toDateString() === today,
+  );
+  const todayCarbs = todayMeals.reduce((sum, m) => sum + m.totalCarbs, 0);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.colors.text.primary }]}>
-            Log Food
-          </Text>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>Log Food</Text>
+          {todayMeals.length > 0 && (
+            <Text style={[styles.todaySummary, { color: theme.colors.text.secondary }]}>
+              Today: {todayCarbs}g carbs across {todayMeals.length} meal{todayMeals.length > 1 ? 's' : ''}
+            </Text>
+          )}
         </View>
 
         {/* Search */}
@@ -106,6 +143,24 @@ export const FoodScreen = (): React.JSX.Element => {
                 {totalCarbs}g
               </Text>
             </View>
+
+            {/* Action Buttons */}
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={[styles.actionBtn, { backgroundColor: theme.colors.primary[500] }]}
+                onPress={saveMeal}
+              >
+                <Icon name="content-save" size={18} color="#fff" />
+                <Text style={styles.actionBtnText}>Save Meal</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionBtn, { backgroundColor: theme.colors.secondary[500] }]}
+                onPress={calculateBolus}
+              >
+                <Icon name="calculator" size={18} color="#fff" />
+                <Text style={styles.actionBtnText}>Calculate Bolus</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -133,14 +188,34 @@ export const FoodScreen = (): React.JSX.Element => {
           </View>
         </View>
 
-        {/* Save Button */}
-        {selectedFoods.length > 0 && (
-          <TouchableOpacity
-            style={[styles.saveButton, { backgroundColor: theme.colors.primary[500] }]}
-            onPress={saveMeal}
-          >
-            <Text style={styles.saveButtonText}>Save Meal</Text>
-          </TouchableOpacity>
+        {/* Today's Meal Log */}
+        {todayMeals.length > 0 && (
+          <View style={[styles.section, { backgroundColor: theme.colors.card }]}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+              Today's Meals
+            </Text>
+            {todayMeals.map((meal) => (
+              <View
+                key={meal.id}
+                style={[styles.mealLogRow, { borderBottomColor: theme.colors.border }]}
+              >
+                <View>
+                  <Text style={[styles.mealLogFoods, { color: theme.colors.text.primary }]}>
+                    {meal.foods.map((f) => f.name).join(', ')}
+                  </Text>
+                  <Text style={[styles.mealLogTime, { color: theme.colors.text.secondary }]}>
+                    {new Date(meal.timestamp).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </Text>
+                </View>
+                <Text style={[styles.mealLogCarbs, { color: theme.colors.primary[500] }]}>
+                  {meal.totalCarbs}g
+                </Text>
+              </View>
+            ))}
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -148,19 +223,11 @@ export const FoodScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-  },
-  header: {
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
+  container: { flex: 1 },
+  scrollContent: { padding: 20 },
+  header: { marginBottom: 20 },
+  title: { fontSize: 24, fontWeight: '700' },
+  todaySummary: { fontSize: 14, marginTop: 4 },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -169,84 +236,51 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 20,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-  },
-  section: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
+  searchInput: { flex: 1, marginLeft: 12, fontSize: 16 },
+  section: { borderRadius: 12, padding: 16, marginBottom: 20 },
+  sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
   selectedItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 8,
   },
-  selectedItemText: {
-    fontSize: 16,
-  },
-  selectedItemRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  carbsText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
+  selectedItemText: { fontSize: 16 },
+  selectedItemRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  carbsText: { fontSize: 14, fontWeight: '500' },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: 12,
     marginTop: 8,
     borderTopWidth: 1,
+    marginBottom: 12,
   },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  totalValue: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  quickAddGrid: {
+  totalLabel: { fontSize: 16, fontWeight: '600' },
+  totalValue: { fontSize: 16, fontWeight: '700' },
+  actionRow: { flexDirection: 'row', gap: 10 },
+  actionBtn: {
+    flex: 1,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  quickAddItem: {
-    width: '47%',
-    borderRadius: 12,
-    padding: 16,
+    justifyContent: 'center',
     alignItems: 'center',
+    gap: 6,
+    borderRadius: 10,
+    paddingVertical: 12,
   },
-  quickAddName: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  quickAddCarbs: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-  saveButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
+  actionBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  quickAddGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  quickAddItem: { width: '47%', borderRadius: 12, padding: 16, alignItems: 'center' },
+  quickAddName: { fontSize: 14, fontWeight: '500', marginTop: 8, textAlign: 'center' },
+  quickAddCarbs: { fontSize: 12, marginTop: 4 },
+  mealLogRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
   },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  mealLogFoods: { fontSize: 14, fontWeight: '500', maxWidth: '80%' },
+  mealLogTime: { fontSize: 12, marginTop: 2 },
+  mealLogCarbs: { fontSize: 16, fontWeight: '700' },
 });
