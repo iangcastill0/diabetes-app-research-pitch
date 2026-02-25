@@ -5,7 +5,7 @@ export const up = (pgm: MigrationBuilder): void => {
   pgm.createTable('cgm_readings', {
     id: {
       type: 'uuid',
-      primaryKey: true,
+      notNull: true,
       default: pgm.func('gen_random_uuid()'),
     },
     time: {
@@ -59,11 +59,14 @@ export const up = (pgm: MigrationBuilder): void => {
 
   // Convert to TimescaleDB hypertable for time-series optimization
   pgm.sql(`
-    SELECT create_hypertable('cgm_readings', 'time', 
+    SELECT create_hypertable('cgm_readings', 'time',
       chunk_time_interval => INTERVAL '1 week',
       if_not_exists => TRUE
     );
   `);
+
+  // TimescaleDB requires partition column in primary key
+  pgm.addConstraint('cgm_readings', 'cgm_readings_pkey', 'PRIMARY KEY (id, time)');
 
   // Indexes for CGM queries
   pgm.createIndex('cgm_readings', ['user_id', 'time DESC']);

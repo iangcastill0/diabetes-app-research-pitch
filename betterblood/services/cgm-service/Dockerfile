@@ -10,7 +10,7 @@ COPY packages/database/package*.json ./packages/database/
 COPY packages/shared-types/package*.json ./packages/shared-types/
 COPY services/cgm-service/package*.json ./services/cgm-service/
 
-RUN npm ci --include=dev
+RUN npm install
 
 COPY packages/config ./packages/config
 COPY packages/database ./packages/database

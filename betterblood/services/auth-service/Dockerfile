@@ -13,7 +13,7 @@ COPY packages/shared-types/package*.json ./packages/shared-types/
 COPY services/auth-service/package*.json ./services/auth-service/
 
 # Install dependencies
-RUN npm ci --include=dev
+RUN npm install
 
 # Copy source code
 COPY packages/config ./packages/config

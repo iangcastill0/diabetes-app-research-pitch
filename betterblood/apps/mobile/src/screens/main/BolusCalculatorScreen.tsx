@@ -17,6 +17,7 @@ import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthStore } from '../../store/authStore';
 import { MainTabParamList } from '../../navigation/MainNavigator';
 import { formatGlucose, unitLabel, parseGlucoseInput, formatISF } from '../../utils/glucose';
+import { GlassCard } from '../../components/GlassCard';
 
 const roundTo005 = (value: number): number => Math.round(value / 0.05) * 0.05;
 
@@ -119,7 +120,8 @@ export const BolusCalculatorScreen = (): React.JSX.Element => {
         </View>
 
         {/* Inputs Card */}
-        <View style={[styles.card, { backgroundColor: theme.colors.card }, theme.shadows.base]}>
+        <GlassCard style={{ marginBottom: 16 }}>
+          <View style={{ padding: 24 }}>
           <Text style={[styles.cardLabel, { color: theme.colors.text.secondary }]}>Inputs</Text>
 
           {/* Current Glucose */}
@@ -176,9 +178,11 @@ export const BolusCalculatorScreen = (): React.JSX.Element => {
             </View>
           </View>
         </View>
+        </GlassCard>
 
         {/* Result Card */}
-        <View style={[styles.card, { backgroundColor: theme.colors.card }, theme.shadows.base]}>
+        <GlassCard style={{ marginBottom: 16 }}>
+          <View style={{ padding: 24 }}>
           <Text style={[styles.cardLabel, { color: theme.colors.text.secondary }]}>Dose Breakdown</Text>
 
           <View style={styles.breakdownRow}>
@@ -191,7 +195,7 @@ export const BolusCalculatorScreen = (): React.JSX.Element => {
             {carbsNum}g ÷ {icrNum} g/unit
           </Text>
 
-          <View style={[styles.divider, { backgroundColor: theme.colors.gray?.[100] ?? '#F3F4F6' }]} />
+          <View style={[styles.divider, { backgroundColor: 'rgba(255,255,255,0.10)' }]} />
 
           <View style={styles.breakdownRow}>
             <Text style={[styles.breakdownLabel, { color: theme.colors.text.secondary }]}>Correction dose</Text>
@@ -203,23 +207,26 @@ export const BolusCalculatorScreen = (): React.JSX.Element => {
             ({formatGlucose(glucoseNum, glucoseUnit)} − {formatGlucose(targetBG, glucoseUnit)}) ÷ {formatISF(isfNum, glucoseUnit)}
           </Text>
 
-          <View style={[styles.divider, { backgroundColor: theme.colors.gray?.[100] ?? '#F3F4F6' }]} />
+          <View style={[styles.divider, { backgroundColor: 'rgba(255,255,255,0.10)' }]} />
 
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: theme.colors.text.primary }]}>Total Bolus</Text>
-            <Text style={[styles.totalValue, { color: theme.colors.primary[500] }]}>
+            <Text style={[styles.totalValue, { color: theme.colors.text.primary }]}>
               {totalBolus.toFixed(2)} u
             </Text>
           </View>
-        </View>
+          </View>
+        </GlassCard>
 
         {/* Confirm Dose Button */}
         <TouchableOpacity
-          style={[styles.confirmButton, { backgroundColor: theme.colors.primary[500] }]}
+          style={[styles.confirmButton, { borderRadius: 14, backgroundColor: theme.colors.primary[600], borderWidth: 1, borderColor: theme.colors.border }]}
           onPress={confirmDose}
         >
-          <Icon name="needle" size={20} color="#fff" />
-          <Text style={styles.confirmButtonText}>Confirm Dose</Text>
+          <View style={styles.confirmButtonInner}>
+            <Icon name="needle" size={20} color={theme.colors.text.inverse} />
+            <Text style={styles.confirmButtonText}>Confirm Dose</Text>
+          </View>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -279,13 +286,15 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 18, fontWeight: '600' },
   totalValue: { fontSize: 32, fontWeight: '700' },
   confirmButton: {
+    marginTop: 4,
+    overflow: 'hidden',
+  },
+  confirmButtonInner: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    borderRadius: 14,
     paddingVertical: 16,
-    marginTop: 4,
   },
   confirmButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

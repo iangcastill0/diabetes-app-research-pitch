@@ -14,6 +14,7 @@ import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthStore } from '../../store/authStore';
 import { foodApi } from '../../services/api';
+import { GlassCard } from '../../components/GlassCard';
 
 export const FoodScreen = (): React.JSX.Element => {
   const { theme } = useTheme();
@@ -103,119 +104,127 @@ export const FoodScreen = (): React.JSX.Element => {
         </View>
 
         {/* Search */}
-        <View style={[styles.searchContainer, { backgroundColor: theme.colors.card }]}>
-          <Icon name="magnify" size={20} color={theme.colors.text.secondary} />
-          <TextInput
-            style={[styles.searchInput, { color: theme.colors.text.primary }]}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search food database..."
-            placeholderTextColor={theme.colors.text.disabled}
-          />
-        </View>
+        <GlassCard style={{ marginBottom: 20 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
+            <Icon name="magnify" size={20} color={theme.colors.text.secondary} />
+            <TextInput
+              style={[styles.searchInput, { color: theme.colors.text.primary }]}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search food database..."
+              placeholderTextColor={theme.colors.text.disabled}
+            />
+          </View>
+        </GlassCard>
 
         {/* Selected Foods */}
         {selectedFoods.length > 0 && (
-          <View style={[styles.section, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
-              Selected Items
-            </Text>
-            {selectedFoods.map((food, index) => (
-              <View key={index} style={styles.selectedItem}>
-                <Text style={[styles.selectedItemText, { color: theme.colors.text.primary }]}>
-                  {food.name}
-                </Text>
-                <View style={styles.selectedItemRight}>
-                  <Text style={[styles.carbsText, { color: theme.colors.primary[500] }]}>
-                    {food.carbs}g
+          <GlassCard style={{ marginBottom: 20 }}>
+            <View style={{ padding: 16 }}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+                Selected Items
+              </Text>
+              {selectedFoods.map((food, index) => (
+                <View key={index} style={styles.selectedItem}>
+                  <Text style={[styles.selectedItemText, { color: theme.colors.text.primary }]}>
+                    {food.name}
                   </Text>
-                  <TouchableOpacity onPress={() => removeFood(index)}>
-                    <Icon name="close-circle" size={20} color={theme.colors.error} />
-                  </TouchableOpacity>
+                  <View style={styles.selectedItemRight}>
+                    <Text style={[styles.carbsText, { color: theme.colors.primary[500] }]}>
+                      {food.carbs}g
+                    </Text>
+                    <TouchableOpacity onPress={() => removeFood(index)}>
+                      <Icon name="close-circle" size={20} color={theme.colors.error} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
+              ))}
+              <View style={[styles.totalRow, { borderTopColor: theme.colors.border }]}>
+                <Text style={[styles.totalLabel, { color: theme.colors.text.primary }]}>
+                  Total Carbs
+                </Text>
+                <Text style={[styles.totalValue, { color: theme.colors.primary[500] }]}>
+                  {totalCarbs}g
+                </Text>
               </View>
-            ))}
-            <View style={[styles.totalRow, { borderTopColor: theme.colors.border }]}>
-              <Text style={[styles.totalLabel, { color: theme.colors.text.primary }]}>
-                Total Carbs
-              </Text>
-              <Text style={[styles.totalValue, { color: theme.colors.primary[500] }]}>
-                {totalCarbs}g
-              </Text>
-            </View>
 
-            {/* Action Buttons */}
-            <View style={styles.actionRow}>
-              <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: theme.colors.primary[500] }]}
-                onPress={saveMeal}
-              >
-                <Icon name="content-save" size={18} color="#fff" />
-                <Text style={styles.actionBtnText}>Save Meal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionBtn, { backgroundColor: theme.colors.secondary[500] }]}
-                onPress={calculateBolus}
-              >
-                <Icon name="calculator" size={18} color="#fff" />
-                <Text style={styles.actionBtnText}>Calculate Bolus</Text>
-              </TouchableOpacity>
+              {/* Action Buttons */}
+              <View style={styles.actionRow}>
+                <TouchableOpacity
+                  style={[styles.actionBtn, { backgroundColor: theme.colors.primary[600] }]}
+                  onPress={saveMeal}
+                >
+                  <Icon name="content-save" size={18} color="#fff" />
+                  <Text style={styles.actionBtnText}>Save Meal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionBtn, { backgroundColor: theme.colors.primary[600] }]}
+                  onPress={calculateBolus}
+                >
+                  <Icon name="calculator" size={18} color="#fff" />
+                  <Text style={styles.actionBtnText}>Calculate Bolus</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </GlassCard>
         )}
 
         {/* Quick Add */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
             Quick Add
           </Text>
           <View style={styles.quickAddGrid}>
             {quickAddFoods.map((food, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.quickAddItem, { backgroundColor: theme.colors.card }]}
-                onPress={() => addFood(food.name, food.carbs)}
-              >
-                <Icon name={food.icon} size={24} color={theme.colors.primary[500]} />
-                <Text style={[styles.quickAddName, { color: theme.colors.text.primary }]}>
-                  {food.name}
-                </Text>
-                <Text style={[styles.quickAddCarbs, { color: theme.colors.text.secondary }]}>
-                  {food.carbs}g carbs
-                </Text>
-              </TouchableOpacity>
+              <GlassCard key={index} style={{ width: '47%' }}>
+                <TouchableOpacity
+                  onPress={() => addFood(food.name, food.carbs)}
+                >
+                  <View style={{ padding: 16, alignItems: 'center' }}>
+                    <Icon name={food.icon} size={24} color={theme.colors.primary[500]} />
+                    <Text style={[styles.quickAddName, { color: theme.colors.text.primary }]}>
+                      {food.name}
+                    </Text>
+                    <Text style={[styles.quickAddCarbs, { color: theme.colors.text.secondary }]}>
+                      {food.carbs}g carbs
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </GlassCard>
             ))}
           </View>
         </View>
 
         {/* Today's Meal Log */}
         {todayMeals.length > 0 && (
-          <View style={[styles.section, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
-              Today's Meals
-            </Text>
-            {todayMeals.map((meal) => (
-              <View
-                key={meal.id}
-                style={[styles.mealLogRow, { borderBottomColor: theme.colors.border }]}
-              >
-                <View>
-                  <Text style={[styles.mealLogFoods, { color: theme.colors.text.primary }]}>
-                    {meal.foods.map((f) => f.name).join(', ')}
-                  </Text>
-                  <Text style={[styles.mealLogTime, { color: theme.colors.text.secondary }]}>
-                    {new Date(meal.timestamp).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+          <GlassCard style={{ marginBottom: 20 }}>
+            <View style={{ padding: 16 }}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+                Today's Meals
+              </Text>
+              {todayMeals.map((meal) => (
+                <View
+                  key={meal.id}
+                  style={[styles.mealLogRow, { borderBottomColor: theme.colors.border }]}
+                >
+                  <View>
+                    <Text style={[styles.mealLogFoods, { color: theme.colors.text.primary }]}>
+                      {meal.foods.map((f) => f.name).join(', ')}
+                    </Text>
+                    <Text style={[styles.mealLogTime, { color: theme.colors.text.secondary }]}>
+                      {new Date(meal.timestamp).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Text>
+                  </View>
+                  <Text style={[styles.mealLogCarbs, { color: theme.colors.primary[500] }]}>
+                    {meal.totalCarbs}g
                   </Text>
                 </View>
-                <Text style={[styles.mealLogCarbs, { color: theme.colors.primary[500] }]}>
-                  {meal.totalCarbs}g
-                </Text>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          </GlassCard>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -228,16 +237,8 @@ const styles = StyleSheet.create({
   header: { marginBottom: 20 },
   title: { fontSize: 24, fontWeight: '700' },
   todaySummary: { fontSize: 14, marginTop: 4 },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 20,
-  },
   searchInput: { flex: 1, marginLeft: 12, fontSize: 16 },
-  section: { borderRadius: 12, padding: 16, marginBottom: 20 },
+  section: { borderRadius: 12, marginBottom: 20 },
   sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
   selectedItem: {
     flexDirection: 'row',
@@ -270,7 +271,6 @@ const styles = StyleSheet.create({
   },
   actionBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
   quickAddGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  quickAddItem: { width: '47%', borderRadius: 12, padding: 16, alignItems: 'center' },
   quickAddName: { fontSize: 14, fontWeight: '500', marginTop: 8, textAlign: 'center' },
   quickAddCarbs: { fontSize: 12, marginTop: 4 },
   mealLogRow: {

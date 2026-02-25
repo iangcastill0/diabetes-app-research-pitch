@@ -15,6 +15,7 @@ import { cgmApi } from '../../services/api';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthStore, InsulinLog } from '../../store/authStore';
 import { formatGlucose, unitLabel } from '../../utils/glucose';
+import { GlassCard } from '../../components/GlassCard';
 
 interface Reading {
   id: string;
@@ -106,22 +107,30 @@ export const HistoryScreen = (): React.JSX.Element => {
       {/* Summary Stats */}
       {stats && (
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statValue, { color: theme.colors.primary[500] }]}>{stats.tir}%</Text>
-            <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>Time in Range</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>{formatGlucose(stats.avg, glucoseUnit)}</Text>
-            <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>Avg ({unitLabel(glucoseUnit)})</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statValue, { color: theme.colors.glucose.hypo }]}>{formatGlucose(stats.min, glucoseUnit)}</Text>
-            <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>Low</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: theme.colors.card }]}>
-            <Text style={[styles.statValue, { color: theme.colors.glucose.high }]}>{formatGlucose(stats.max, glucoseUnit)}</Text>
-            <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>High</Text>
-          </View>
+          <GlassCard style={{ flex: 1 }}>
+            <View style={{ padding: 12, alignItems: 'center' }}>
+              <Text style={[styles.statValue, { color: theme.colors.primary[500] }]}>{stats.tir}%</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>Time in Range</Text>
+            </View>
+          </GlassCard>
+          <GlassCard style={{ flex: 1 }}>
+            <View style={{ padding: 12, alignItems: 'center' }}>
+              <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>{formatGlucose(stats.avg, glucoseUnit)}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>Avg ({unitLabel(glucoseUnit)})</Text>
+            </View>
+          </GlassCard>
+          <GlassCard style={{ flex: 1 }}>
+            <View style={{ padding: 12, alignItems: 'center' }}>
+              <Text style={[styles.statValue, { color: theme.colors.glucose.hypo }]}>{formatGlucose(stats.min, glucoseUnit)}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>Low</Text>
+            </View>
+          </GlassCard>
+          <GlassCard style={{ flex: 1 }}>
+            <View style={{ padding: 12, alignItems: 'center' }}>
+              <Text style={[styles.statValue, { color: theme.colors.glucose.high }]}>{formatGlucose(stats.max, glucoseUnit)}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>High</Text>
+            </View>
+          </GlassCard>
         </View>
       )}
 
@@ -139,93 +148,97 @@ export const HistoryScreen = (): React.JSX.Element => {
           </View>
         ) : (
           readings.map((item) => (
-            <View key={item.id} style={[styles.row, { backgroundColor: theme.colors.card }]}>
-              <View style={styles.glucoseContainer}>
-                <Text style={[styles.glucoseValue, { color: getGlucoseColor(item.glucoseValueMgDl) }]}>
-                  {formatGlucose(item.glucoseValueMgDl, glucoseUnit)}
-                </Text>
-                <Text style={[styles.glucoseUnit, { color: theme.colors.text.secondary }]}>{unitLabel(glucoseUnit)}</Text>
+            <GlassCard key={item.id} style={{ marginBottom: 8 }}>
+              <View style={{ padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={styles.glucoseContainer}>
+                  <Text style={[styles.glucoseValue, { color: getGlucoseColor(item.glucoseValueMgDl) }]}>
+                    {formatGlucose(item.glucoseValueMgDl, glucoseUnit)}
+                  </Text>
+                  <Text style={[styles.glucoseUnit, { color: theme.colors.text.secondary }]}>{unitLabel(glucoseUnit)}</Text>
+                </View>
+                <View style={styles.rowRight}>
+                  <Icon
+                    name={getTrendIcon(item.trendDirection)}
+                    size={16}
+                    color={getGlucoseColor(item.glucoseValueMgDl)}
+                  />
+                  <Text style={[styles.time, { color: theme.colors.text.secondary }]}>
+                    {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.rowRight}>
-                <Icon
-                  name={getTrendIcon(item.trendDirection)}
-                  size={16}
-                  color={getGlucoseColor(item.glucoseValueMgDl)}
-                />
-                <Text style={[styles.time, { color: theme.colors.text.secondary }]}>
-                  {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-              </View>
-            </View>
+            </GlassCard>
           ))
         )}
 
         {/* Dose Log */}
         {insulinLogs.length > 0 && (
           <View style={styles.doseSection}>
-            <Text style={[styles.doseSectionTitle, { color: theme.colors.text.primary }]}>
+            <Text style={[styles.doseSectionTitle, { color: theme.colors.text.secondary }]}>
               Dose Log
             </Text>
             {insulinLogs.map((log: InsulinLog) => (
-              <View key={log.id} style={[styles.doseCard, { backgroundColor: theme.colors.card }, theme.shadows.sm]}>
-                {/* Header row */}
-                <View style={styles.doseHeader}>
-                  <View style={styles.doseHeaderLeft}>
-                    <Icon name="needle" size={16} color={theme.colors.secondary[500]} />
-                    <Text style={[styles.doseTotalUnits, { color: theme.colors.secondary[500] }]}>
-                      {log.units.toFixed(2)} u
-                    </Text>
+              <GlassCard key={log.id} style={{ marginBottom: 12 }}>
+                <View style={{ padding: 16 }}>
+                  {/* Header row */}
+                  <View style={styles.doseHeader}>
+                    <View style={styles.doseHeaderLeft}>
+                      <Icon name="needle" size={16} color={theme.colors.secondary[500]} />
+                      <Text style={[styles.doseTotalUnits, { color: theme.colors.secondary[500] }]}>
+                        {log.units.toFixed(2)} u
+                      </Text>
+                    </View>
+                    <View style={styles.doseHeaderRight}>
+                      <Text style={[styles.doseTime, { color: theme.colors.text.secondary }]}>
+                        {new Date(log.timestamp).toLocaleString([], {
+                          month: 'short', day: 'numeric',
+                          hour: '2-digit', minute: '2-digit',
+                        })}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          Alert.alert('Delete Entry', 'Remove this dose from your log?', [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Delete', style: 'destructive', onPress: () => deleteInsulinLog(log.id) },
+                          ])
+                        }
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Icon name="trash-can-outline" size={18} color={theme.colors.error} />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                  <View style={styles.doseHeaderRight}>
-                    <Text style={[styles.doseTime, { color: theme.colors.text.secondary }]}>
-                      {new Date(log.timestamp).toLocaleString([], {
-                        month: 'short', day: 'numeric',
-                        hour: '2-digit', minute: '2-digit',
-                      })}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() =>
-                        Alert.alert('Delete Entry', 'Remove this dose from your log?', [
-                          { text: 'Cancel', style: 'cancel' },
-                          { text: 'Delete', style: 'destructive', onPress: () => deleteInsulinLog(log.id) },
-                        ])
-                      }
-                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    >
-                      <Icon name="trash-can-outline" size={18} color={theme.colors.error} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
 
-                {/* Breakdown grid */}
-                <View style={[styles.doseDivider, { backgroundColor: theme.colors.border }]} />
-                <View style={styles.doseGrid}>
-                  <View style={styles.doseGridItem}>
-                    <Text style={[styles.doseGridLabel, { color: theme.colors.text.secondary }]}>BG at dose</Text>
-                    <Text style={[styles.doseGridValue, { color: getGlucoseColor(log.glucoseAtTime) }]}>
-                      {formatGlucose(log.glucoseAtTime, glucoseUnit)} {unitLabel(glucoseUnit)}
-                    </Text>
-                  </View>
-                  <View style={styles.doseGridItem}>
-                    <Text style={[styles.doseGridLabel, { color: theme.colors.text.secondary }]}>Carbs</Text>
-                    <Text style={[styles.doseGridValue, { color: theme.colors.text.primary }]}>
-                      {(log.carbs ?? 0)}g
-                    </Text>
-                  </View>
-                  <View style={styles.doseGridItem}>
-                    <Text style={[styles.doseGridLabel, { color: theme.colors.text.secondary }]}>Carb dose</Text>
-                    <Text style={[styles.doseGridValue, { color: theme.colors.text.primary }]}>
-                      {log.carbDose.toFixed(2)} u
-                    </Text>
-                  </View>
-                  <View style={styles.doseGridItem}>
-                    <Text style={[styles.doseGridLabel, { color: theme.colors.text.secondary }]}>Correction</Text>
-                    <Text style={[styles.doseGridValue, { color: theme.colors.text.primary }]}>
-                      {log.correctionDose.toFixed(2)} u
-                    </Text>
+                  {/* Breakdown grid */}
+                  <View style={[styles.doseDivider, { backgroundColor: theme.colors.border }]} />
+                  <View style={styles.doseGrid}>
+                    <View style={styles.doseGridItem}>
+                      <Text style={[styles.doseGridLabel, { color: theme.colors.text.secondary }]}>BG at dose</Text>
+                      <Text style={[styles.doseGridValue, { color: getGlucoseColor(log.glucoseAtTime) }]}>
+                        {formatGlucose(log.glucoseAtTime, glucoseUnit)} {unitLabel(glucoseUnit)}
+                      </Text>
+                    </View>
+                    <View style={styles.doseGridItem}>
+                      <Text style={[styles.doseGridLabel, { color: theme.colors.text.secondary }]}>Carbs</Text>
+                      <Text style={[styles.doseGridValue, { color: theme.colors.text.primary }]}>
+                        {(log.carbs ?? 0)}g
+                      </Text>
+                    </View>
+                    <View style={styles.doseGridItem}>
+                      <Text style={[styles.doseGridLabel, { color: theme.colors.text.secondary }]}>Carb dose</Text>
+                      <Text style={[styles.doseGridValue, { color: theme.colors.text.primary }]}>
+                        {log.carbDose.toFixed(2)} u
+                      </Text>
+                    </View>
+                    <View style={styles.doseGridItem}>
+                      <Text style={[styles.doseGridLabel, { color: theme.colors.text.secondary }]}>Correction</Text>
+                      <Text style={[styles.doseGridValue, { color: theme.colors.text.primary }]}>
+                        {log.correctionDose.toFixed(2)} u
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
+              </GlassCard>
             ))}
           </View>
         )}
@@ -246,23 +259,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
   },
-  statCard: {
-    flex: 1,
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
   statValue: { fontSize: 20, fontWeight: '700' },
   statLabel: { fontSize: 10, marginTop: 2, textAlign: 'center' },
   listContent: { padding: 20, paddingTop: 0 },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
   glucoseContainer: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
   glucoseValue: { fontSize: 24, fontWeight: '600' },
   glucoseUnit: { fontSize: 14 },
@@ -272,7 +271,6 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 16 },
   doseSection: { marginTop: 24 },
   doseSectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
-  doseCard: { borderRadius: 14, padding: 16, marginBottom: 12 },
   doseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   doseHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   doseHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },

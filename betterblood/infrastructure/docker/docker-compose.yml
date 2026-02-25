@@ -155,37 +155,6 @@ services:
       postgres:
         condition: service_healthy
 
-  # Notification Service
-  notification-service:
-    build:
-      context: ../..
-      dockerfile: services/notification-service/Dockerfile
-    container_name: bb-notification-service
-    environment:
-      NODE_ENV: development
-      PORT: 3004
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: betterblood
-      DB_USER: betterblood
-      DB_PASSWORD: betterblood
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: dev-jwt-secret-do-not-use-in-production
-      LOG_LEVEL: debug
-    ports:
-      - "3004:3004"
-    volumes:
-      - ../../services/notification-service:/app
-      - /app/node_modules
-    command: npm run dev
-    networks:
-      - betterblood-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
 volumes:
   postgres_data:

@@ -3,35 +3,35 @@
 // No emojis, clean and accessible
 
 export const colors = {
-  // Primary palette - medical trust
+  // Primary palette - monochromatic slate
   primary: {
-    50: '#E6F4F1',
-    100: '#CCE9E3',
-    200: '#99D3C7',
-    300: '#66BDAB',
-    400: '#33A78F',
-    500: '#009173', // Main brand color
-    600: '#00745C',
-    700: '#005745',
-    800: '#003A2E',
-    900: '#001D17',
+    50:  '#F8FAFC',
+    100: '#F1F5F9',
+    200: '#CBD5E1',
+    300: '#94A3B8',
+    400: '#64748B',
+    500: '#334155', // Main accent - dark slate
+    600: '#1E293B',
+    700: '#0F172A',
+    800: '#020617',
+    900: '#010409',
   },
 
-  // Secondary palette
+  // Secondary palette - lighter slate
   secondary: {
-    50: '#EFF6FF',
-    100: '#DBEAFE',
-    200: '#BFDBFE',
-    300: '#93C5FD',
-    400: '#60A5FA',
-    500: '#3B82F6',
-    600: '#2563EB',
-    700: '#1D4ED8',
-    800: '#1E40AF',
-    900: '#1E3A8A',
+    50:  '#F8FAFC',
+    100: '#F1F5F9',
+    200: '#E2E8F0',
+    300: '#CBD5E1',
+    400: '#94A3B8',
+    500: '#475569', // Secondary accent
+    600: '#334155',
+    700: '#1E293B',
+    800: '#0F172A',
+    900: '#020617',
   },
 
-  // Glucose-specific colors
+  // Glucose-specific colors — safety-critical, keep vivid
   glucose: {
     severeHypo: '#DC2626', // < 54
     hypo: '#EF4444',       // 54-69
@@ -69,8 +69,8 @@ export const colors = {
   // Text
   text: {
     primary: '#111827',
-    secondary: '#6B7280',
-    disabled: '#9CA3AF',
+    secondary: '#64748B',
+    disabled: '#94A3B8',
     inverse: '#FFFFFF',
   },
 
@@ -196,21 +196,107 @@ export const lightTheme: Theme = {
   isDark: false,
 };
 
+// Monochromatic glow shadows
+const monoShadows = {
+  none: shadows.none,
+  sm: {
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  base: {
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.10,
+    shadowRadius: 18,
+    elevation: 4,
+  },
+  md: {
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 6,
+  },
+  lg: {
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.14,
+    shadowRadius: 36,
+    elevation: 10,
+  },
+};
+
 export const darkTheme: Theme = {
   ...lightTheme,
   colors: {
     ...colors,
-    background: '#0F172A',
-    surface: '#1E293B',
-    card: '#334155',
-    text: {
-      primary: '#F9FAFB',
-      secondary: '#9CA3AF',
-      disabled: '#6B7280',
-      inverse: '#111827',
+    // Primary → monochromatic slate palette
+    primary: {
+      ...colors.primary,
+      50:  'rgba(255,255,255,0.05)',
+      100: 'rgba(255,255,255,0.08)',
+      200: 'rgba(255,255,255,0.15)',
+      300: '#94A3B8',
+      400: '#CBD5E1',
+      500: '#E2E8F0',   // near-white for icons/text
+      600: '#94A3B8',
+      700: '#64748B',
     },
-    border: '#374151',
-    divider: '#1F2937',
+    // Secondary → darker slate
+    secondary: {
+      ...colors.secondary,
+      50:  'rgba(255,255,255,0.04)',
+      100: 'rgba(255,255,255,0.07)',
+      200: 'rgba(255,255,255,0.12)',
+      300: '#64748B',
+      400: '#94A3B8',
+      500: '#94A3B8',   // medium slate
+      600: '#64748B',
+      700: '#475569',
+    },
+    // Glucose: medical safety colors — keep for clinical clarity
+    glucose: {
+      severeHypo: '#FF4444',
+      hypo:       '#FF6B6B',
+      low:        '#FF9F43',
+      target:     '#94A3B8',
+      high:       '#FF9F43',
+      hyper:      '#FF6B6B',
+    },
+    // Grays → dark translucent fills for tint surfaces
+    gray: {
+      ...colors.gray,
+      50:  'rgba(255,255,255,0.05)',
+      100: 'rgba(255,255,255,0.08)',
+      200: 'rgba(255,255,255,0.13)',
+      300: 'rgba(255,255,255,0.20)',
+      400: '#94A3B8',
+      500: '#64748B',
+      600: '#94A3B8',
+      700: '#CBD5E1',
+      800: '#E2E8F0',
+      900: '#F1F5F9',
+    },
+    // Transparent so AmbientBackground canvas shows everywhere
+    background: 'transparent',
+    surface: 'rgba(255,255,255,0.04)',
+    card:    'rgba(255,255,255,0.07)',
+    text: {
+      primary:  '#FFFFFF',
+      secondary: '#94A3B8',
+      disabled:  '#475569',
+      inverse:   '#0A0A1F',
+    },
+    border:  'rgba(255,255,255,0.12)',
+    divider: 'rgba(255,255,255,0.06)',
+    success: '#94A3B8',
+    warning: '#CBD5E1',
+    error:   '#F87171',
+    info:    '#94A3B8',
   },
+  shadows: monoShadows,
   isDark: true,
 };

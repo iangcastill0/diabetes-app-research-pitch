@@ -6,7 +6,7 @@ import { StatusBar } from 'react-native';
 
 import { RootNavigator } from './navigation/RootNavigator';
 import { useAuthStore } from './store/authStore';
-import { ThemeProvider } from './theme/ThemeProvider';
+import { ThemeProvider, useTheme } from './theme/ThemeProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,6 +16,42 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Inner component so navTheme can react to theme toggle via useTheme()
+function AppContent(): React.JSX.Element {
+  const { isDark } = useTheme();
+
+  const navTheme = isDark
+    ? {
+        dark: true,
+        colors: {
+          primary: '#E2E8F0',
+          background: '#080C14',
+          card: 'rgba(8,12,20,0.90)',
+          text: '#FFFFFF',
+          border: 'rgba(255,255,255,0.08)',
+          notification: '#F87171',
+        },
+      }
+    : {
+        dark: false,
+        colors: {
+          primary: '#334155',
+          background: '#FFFFFF',
+          card: '#FFFFFF',
+          text: '#111827',
+          border: '#E5E7EB',
+          notification: '#EF4444',
+        },
+      };
+
+  return (
+    <NavigationContainer theme={navTheme}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <RootNavigator />
+    </NavigationContainer>
+  );
+}
 
 function App(): React.JSX.Element {
   const initializeAuth = useAuthStore(state => state.initializeAuth);
@@ -28,10 +64,7 @@ function App(): React.JSX.Element {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <NavigationContainer>
-            <StatusBar barStyle="dark-content" />
-            <RootNavigator />
-          </NavigationContainer>
+          <AppContent />
         </ThemeProvider>
       </QueryClientProvider>
     </SafeAreaProvider>

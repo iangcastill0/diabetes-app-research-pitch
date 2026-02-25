@@ -28,22 +28,8 @@ const nativePackagesToPin = [
   'react-native-svg',
 ];
 
-// expo-font@14 (workspace root) calls getLoadedFonts() which Expo Go SDK 50 doesn't support.
-// Force it to resolve to the SDK-50-compatible version bundled inside the `expo` package.
-const expoFontSdk50Path = path.resolve(
-  workspaceRoot,
-  'node_modules/expo/node_modules/expo-font'
-);
-
 const originalResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  // Pin expo-font to the SDK 50 compatible version (11.x) bundled inside expo itself
-  if (moduleName === 'expo-font' || moduleName.startsWith('expo-font/')) {
-    const suffix = moduleName.slice('expo-font'.length);
-    const target = path.resolve(expoFontSdk50Path + suffix);
-    return { filePath: require.resolve(target), type: 'sourceFile' };
-  }
-
   // Force axios to use the browser build instead of the Node.js build
   if (moduleName === 'axios') {
     return {

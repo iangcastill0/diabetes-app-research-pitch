@@ -15,6 +15,7 @@ import { cgmApi } from '../../services/api';
 import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthStore } from '../../store/authStore';
 import { formatGlucose, unitLabel } from '../../utils/glucose';
+import { GlassCard } from '../../components/GlassCard';
 
 interface CurrentReading {
   glucoseValueMgDl: number;
@@ -154,122 +155,129 @@ export const DashboardScreen = (): React.JSX.Element => {
         )}
 
         {/* Current Reading Card */}
-        <View style={[styles.card, { backgroundColor: theme.colors.card }, theme.shadows.base]}>
+        <GlassCard style={{ marginBottom: 16 }}>
+          <View style={{ padding: 24 }}>
           <Text style={[styles.cardLabel, { color: theme.colors.text.secondary }]}>
             Current Glucose
           </Text>
-
-          {currentReading ? (
-            <View style={styles.readingContainer}>
-              <View style={styles.glucoseValueContainer}>
-                <Text
-                  style={[
-                    styles.glucoseValue,
-                    { color: getGlucoseColor(currentReading.glucoseValueMgDl) },
-                  ]}
-                >
-                  {formatGlucose(currentReading.glucoseValueMgDl, glucoseUnit)}
+            {currentReading ? (
+              <View style={styles.readingContainer}>
+                <View style={styles.glucoseValueContainer}>
+                  <Text
+                    style={[
+                      styles.glucoseValue,
+                      { color: getGlucoseColor(currentReading.glucoseValueMgDl) },
+                    ]}
+                  >
+                    {formatGlucose(currentReading.glucoseValueMgDl, glucoseUnit)}
+                  </Text>
+                  <Text style={[styles.glucoseUnit, { color: theme.colors.text.secondary }]}>
+                    {unitLabel(glucoseUnit)}
+                  </Text>
+                  <Icon
+                    name={getTrendIcon(currentReading.trendDirection)}
+                    size={32}
+                    color={getGlucoseColor(currentReading.glucoseValueMgDl)}
+                    style={styles.trendIcon}
+                  />
+                </View>
+                <Text style={[styles.timestamp, { color: theme.colors.text.secondary }]}>
+                  {new Date(currentReading.timestamp).toLocaleTimeString()}
                 </Text>
-                <Text style={[styles.glucoseUnit, { color: theme.colors.text.secondary }]}>
-                  {unitLabel(glucoseUnit)}
-                </Text>
-                <Icon
-                  name={getTrendIcon(currentReading.trendDirection)}
-                  size={32}
-                  color={getGlucoseColor(currentReading.glucoseValueMgDl)}
-                  style={styles.trendIcon}
-                />
               </View>
-              <Text style={[styles.timestamp, { color: theme.colors.text.secondary }]}>
-                {new Date(currentReading.timestamp).toLocaleTimeString()}
+            ) : (
+              <Text style={[styles.noData, { color: theme.colors.text.secondary }]}>
+                No reading available
               </Text>
-            </View>
-          ) : (
-            <Text style={[styles.noData, { color: theme.colors.text.secondary }]}>
-              No reading available
-            </Text>
-          )}
-        </View>
+            )}
+          </View>
+        </GlassCard>
 
         {/* Stats Row */}
         {trendData && (
           <View style={styles.statsRow}>
-            <View style={[styles.statCard, { backgroundColor: theme.colors.card }, theme.shadows.sm]}>
-              <Text style={[styles.statValue, { color: theme.colors.primary[500] }]}>
-                {trendData.timeInRange}%
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>
-                Time in Range
-              </Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: theme.colors.card }, theme.shadows.sm]}>
-              <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>
-                {formatGlucose(trendData.average, glucoseUnit)}
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>
-                3hr Avg ({unitLabel(glucoseUnit)})
-              </Text>
-            </View>
-            <View style={[styles.statCard, { backgroundColor: theme.colors.card }, theme.shadows.sm]}>
-              <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>
-                {trendData.readings}
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>
-                Readings
-              </Text>
-            </View>
+            <GlassCard style={{ flex: 1 }}>
+              <View style={{ padding: 16, alignItems: 'center' }}>
+                <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>
+                  {trendData.timeInRange}%
+                </Text>
+                <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>
+                  Time in Range
+                </Text>
+              </View>
+            </GlassCard>
+            <GlassCard style={{ flex: 1 }}>
+              <View style={{ padding: 16, alignItems: 'center' }}>
+                <Text style={[styles.statValue, { color: theme.colors.text.secondary }]}>
+                  {formatGlucose(trendData.average, glucoseUnit)}
+                </Text>
+                <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>
+                  3hr Avg ({unitLabel(glucoseUnit)})
+                </Text>
+              </View>
+            </GlassCard>
+            <GlassCard style={{ flex: 1 }}>
+              <View style={{ padding: 16, alignItems: 'center' }}>
+                <Text style={[styles.statValue, { color: theme.colors.text.primary }]}>
+                  {trendData.readings}
+                </Text>
+                <Text style={[styles.statLabel, { color: theme.colors.text.secondary }]}>
+                  Readings
+                </Text>
+              </View>
+            </GlassCard>
           </View>
         )}
 
         {/* Quick Actions */}
         <View style={styles.quickActions}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text.primary }]}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
             Quick Actions
           </Text>
 
           <View style={styles.actionGrid}>
             <View style={styles.actionRow}>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: theme.colors.primary[50] }]}
-                onPress={() => navigation.navigate('Food' as never)}
-              >
-                <Icon name="plus-circle" size={28} color={theme.colors.primary[500]} />
-                <Text style={[styles.actionText, { color: theme.colors.primary[600] }]}>
-                  Log Food
-                </Text>
-              </TouchableOpacity>
+              <GlassCard style={{ flex: 1 }}>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+                  onPress={() => navigation.navigate('Food' as never)}
+                >
+                  <Icon name="plus-circle" size={28} color={theme.colors.text.primary} />
+                  <Text style={[styles.actionText, { color: theme.colors.text.primary }]}>Log Food</Text>
+                </TouchableOpacity>
+              </GlassCard>
 
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: theme.colors.secondary[50] }]}
-                onPress={() => navigation.navigate('BolusCalculator' as never)}
-              >
-                <Icon name="needle" size={28} color={theme.colors.secondary[500]} />
-                <Text style={[styles.actionText, { color: theme.colors.secondary[600] }]}>
-                  Log Insulin
-                </Text>
-              </TouchableOpacity>
+              <GlassCard style={{ flex: 1 }}>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+                  onPress={() => navigation.navigate('BolusCalculator' as never)}
+                >
+                  <Icon name="needle" size={28} color={theme.colors.text.secondary} />
+                  <Text style={[styles.actionText, { color: theme.colors.text.secondary }]}>Log Insulin</Text>
+                </TouchableOpacity>
+              </GlassCard>
             </View>
 
             <View style={styles.actionRow}>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: theme.colors.gray[50] }]}
-                onPress={() => navigation.navigate('History' as never)}
-              >
-                <Icon name="chart-line" size={28} color={theme.colors.gray[600]} />
-                <Text style={[styles.actionText, { color: theme.colors.gray[700] }]}>
-                  View History
-                </Text>
-              </TouchableOpacity>
+              <GlassCard style={{ flex: 1 }}>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+                  onPress={() => navigation.navigate('History' as never)}
+                >
+                  <Icon name="chart-line" size={28} color={theme.colors.text.secondary} />
+                  <Text style={[styles.actionText, { color: theme.colors.text.secondary }]}>View History</Text>
+                </TouchableOpacity>
+              </GlassCard>
 
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: theme.colors.primary[50] }]}
-                onPress={() => navigation.navigate('BolusCalculator' as never)}
-              >
-                <Icon name="calculator" size={28} color={theme.colors.primary[500]} />
-                <Text style={[styles.actionText, { color: theme.colors.primary[600] }]}>
-                  Bolus Calc
-                </Text>
-              </TouchableOpacity>
+              <GlassCard style={{ flex: 1 }}>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: 'transparent' }]}
+                  onPress={() => navigation.navigate('BolusCalculator' as never)}
+                >
+                  <Icon name="calculator" size={28} color={theme.colors.text.secondary} />
+                  <Text style={[styles.actionText, { color: theme.colors.text.secondary }]}>Bolus Calc</Text>
+                </TouchableOpacity>
+              </GlassCard>
             </View>
           </View>
         </View>
@@ -278,58 +286,64 @@ export const DashboardScreen = (): React.JSX.Element => {
         {(lastMeal || lastInsulin) && (
           <View style={styles.statsRow}>
             {lastMeal && (
-              <View style={[styles.activityCard, { backgroundColor: theme.colors.card }, theme.shadows.sm]}>
-                <Icon name="food-apple" size={18} color={theme.colors.primary[500]} />
-                <Text style={[styles.activityValue, { color: theme.colors.text.primary }]}>
-                  {lastMeal.totalCarbs}g carbs
-                </Text>
-                <Text style={[styles.activityLabel, { color: theme.colors.text.secondary }]}>
-                  Last meal
-                </Text>
-              </View>
+              <GlassCard style={{ flex: 1 }}>
+                <View style={{ padding: 14, alignItems: 'center', gap: 4 }}>
+                  <Icon name="food-apple" size={18} color={theme.colors.text.primary} />
+                  <Text style={[styles.activityValue, { color: theme.colors.text.primary }]}>
+                    {lastMeal.totalCarbs}g carbs
+                  </Text>
+                  <Text style={[styles.activityLabel, { color: theme.colors.text.secondary }]}>
+                    Last meal
+                  </Text>
+                </View>
+              </GlassCard>
             )}
             {lastInsulin && (
-              <View style={[styles.activityCard, { backgroundColor: theme.colors.card }, theme.shadows.sm]}>
-                <Icon name="needle" size={18} color={theme.colors.secondary[500]} />
-                <Text style={[styles.activityValue, { color: theme.colors.text.primary }]}>
-                  {lastInsulin.units.toFixed(2)}u
-                </Text>
-                <Text style={[styles.activityLabel, { color: theme.colors.text.secondary }]}>
-                  Last dose
-                </Text>
-              </View>
+              <GlassCard style={{ flex: 1 }}>
+                <View style={{ padding: 14, alignItems: 'center', gap: 4 }}>
+                  <Icon name="needle" size={18} color={theme.colors.text.secondary} />
+                  <Text style={[styles.activityValue, { color: theme.colors.text.primary }]}>
+                    {lastInsulin.units.toFixed(2)}u
+                  </Text>
+                  <Text style={[styles.activityLabel, { color: theme.colors.text.secondary }]}>
+                    Last dose
+                  </Text>
+                </View>
+              </GlassCard>
             )}
           </View>
         )}
 
         {/* Target Range */}
-        <View style={[styles.card, { backgroundColor: theme.colors.card }, theme.shadows.base]}>
-          <Text style={[styles.cardLabel, { color: theme.colors.text.secondary }]}>
-            Target Range
-          </Text>
-          <View style={styles.rangeContainer}>
-            <View style={styles.rangeBar}>
-              <View
-                style={[
-                  styles.rangeTarget,
-                  {
-                    backgroundColor: theme.colors.glucose.target,
-                    marginLeft: `${rangeLeftPct}%` as any,
-                    width: `${rangeWidthPct}%` as any,
-                  },
-                ]}
-              />
-            </View>
-            <View style={styles.rangeLabels}>
-              <Text style={[styles.rangeLabel, { color: theme.colors.text.secondary }]}>
-                {formatGlucose(targetRangeMin, glucoseUnit)} {unitLabel(glucoseUnit)}
-              </Text>
-              <Text style={[styles.rangeLabel, { color: theme.colors.text.secondary }]}>
-                {formatGlucose(targetRangeMax, glucoseUnit)} {unitLabel(glucoseUnit)}
-              </Text>
+        <GlassCard style={{ marginBottom: 16 }}>
+          <View style={{ padding: 24 }}>
+            <Text style={[styles.cardLabel, { color: theme.colors.text.secondary }]}>
+              Target Range
+            </Text>
+            <View style={styles.rangeContainer}>
+              <View style={[styles.rangeBar, { backgroundColor: theme.colors.border }]}>
+                <View
+                  style={[
+                    styles.rangeTarget,
+                    {
+                      backgroundColor: theme.colors.primary[500],
+                      marginLeft: `${rangeLeftPct}%` as any,
+                      width: `${rangeWidthPct}%` as any,
+                    },
+                  ]}
+                />
+              </View>
+              <View style={styles.rangeLabels}>
+                <Text style={[styles.rangeLabel, { color: theme.colors.text.secondary }]}>
+                  {formatGlucose(targetRangeMin, glucoseUnit)} {unitLabel(glucoseUnit)}
+                </Text>
+                <Text style={[styles.rangeLabel, { color: theme.colors.text.secondary }]}>
+                  {formatGlucose(targetRangeMax, glucoseUnit)} {unitLabel(glucoseUnit)}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
+        </GlassCard>
       </ScrollView>
     </SafeAreaView>
   );

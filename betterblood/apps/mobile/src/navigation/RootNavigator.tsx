@@ -15,7 +15,7 @@ export const RootNavigator = (): React.JSX.Element => {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, sceneContainerStyle: { backgroundColor: 'transparent' } }}>
       {isAuthenticated ? (
         <Stack.Screen name="Main" component={MainNavigator} />
       ) : (

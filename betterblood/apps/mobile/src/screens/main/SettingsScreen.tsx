@@ -14,6 +14,7 @@ import { useTheme } from '../../theme/ThemeProvider';
 import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../services/api';
 import { formatGlucose, parseGlucoseInput, unitLabel } from '../../utils/glucose';
+import { GlassCard } from '../../components/GlassCard';
 
 export const SettingsScreen = (): React.JSX.Element => {
   const { theme, isDark, toggleTheme } = useTheme();
@@ -121,6 +122,7 @@ export const SettingsScreen = (): React.JSX.Element => {
           label: 'Dark Mode',
           value: isDark ? 'On' : 'Off',
           onPress: toggleTheme,
+          isDarkModeToggle: true,
         },
         {
           icon: 'tune',
@@ -185,58 +187,54 @@ export const SettingsScreen = (): React.JSX.Element => {
             <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
               {section.title}
             </Text>
-            <View
-              style={[
-                styles.sectionContent,
-                { backgroundColor: theme.colors.card },
-                theme.shadows.sm,
-              ]}
-            >
-              {section.items.map((item, itemIndex) => (
-                <TouchableOpacity
-                  key={itemIndex}
-                  style={[
-                    styles.settingItem,
-                    itemIndex < section.items.length - 1 && {
-                      borderBottomWidth: 1,
-                      borderBottomColor: theme.colors.border,
-                    },
-                  ]}
-                  onPress={item.onPress}
-                >
-                  <View style={styles.settingLeft}>
-                    <Icon
-                      name={item.icon}
-                      size={20}
-                      color={theme.colors.primary[500]}
-                      style={styles.settingIcon}
-                    />
-                    <Text
-                      style={[styles.settingLabel, { color: theme.colors.text.primary }]}
-                    >
-                      {item.label}
-                    </Text>
-                  </View>
-                  <View style={styles.settingRight}>
-                    {item.value && (
+            <GlassCard>
+              <View style={styles.sectionInner}>
+                {section.items.map((item, itemIndex) => (
+                  <TouchableOpacity
+                    key={itemIndex}
+                    style={[
+                      styles.settingItem,
+                      itemIndex < section.items.length - 1 && {
+                        borderBottomWidth: 1,
+                        borderBottomColor: theme.colors.border,
+                      },
+                    ]}
+                    onPress={item.onPress}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon
+                        name={item.icon}
+                        size={20}
+                        color={theme.colors.primary[500]}
+                        style={styles.settingIcon}
+                      />
                       <Text
-                        style={[
-                          styles.settingValue,
-                          { color: theme.colors.text.secondary },
-                        ]}
+                        style={[styles.settingLabel, { color: theme.colors.text.primary }]}
                       >
-                        {item.value}
+                        {item.label}
                       </Text>
-                    )}
-                    <Icon
-                      name="chevron-right"
-                      size={20}
-                      color={theme.colors.text.disabled}
-                    />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    </View>
+                    <View style={styles.settingRight}>
+                      {item.value && (
+                        <Text
+                          style={[
+                            styles.settingValue,
+                            { color: theme.colors.text.secondary },
+                          ]}
+                        >
+                          {item.value}
+                        </Text>
+                      )}
+                      <Icon
+                        name="chevron-right"
+                        size={20}
+                        color={theme.colors.text.disabled}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </GlassCard>
           </View>
         ))}
 
@@ -245,50 +243,52 @@ export const SettingsScreen = (): React.JSX.Element => {
           <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
             Glucose Targets
           </Text>
-          <View style={[styles.sectionContent, { backgroundColor: theme.colors.card }, theme.shadows.sm]}>
-            <View style={[styles.inputItem, { borderBottomWidth: 1, borderBottomColor: theme.colors.border }]}>
-              <View style={styles.inputItemLeft}>
-                <Icon name="bullseye-arrow" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>Target BG ({unitLabel(doseSettings.glucoseUnit)})</Text>
+          <GlassCard>
+            <View style={styles.sectionInner}>
+              <View style={[styles.inputItem, { borderBottomWidth: 1, borderBottomColor: theme.colors.border }]}>
+                <View style={styles.inputItemLeft}>
+                  <Icon name="bullseye-arrow" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
+                  <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>Target BG ({unitLabel(doseSettings.glucoseUnit)})</Text>
+                </View>
+                <TextInput
+                  style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
+                  value={targetBG}
+                  onChangeText={handleGlucoseChange(setTargetBG, 'targetBG')}
+                  keyboardType="numeric"
+                  placeholder="120"
+                  placeholderTextColor={theme.colors.text.secondary}
+                />
               </View>
-              <TextInput
-                style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
-                value={targetBG}
-                onChangeText={handleGlucoseChange(setTargetBG, 'targetBG')}
-                keyboardType="numeric"
-                placeholder="120"
-                placeholderTextColor={theme.colors.text.secondary}
-              />
-            </View>
-            <View style={[styles.inputItem, { borderBottomWidth: 1, borderBottomColor: theme.colors.border }]}>
-              <View style={styles.inputItemLeft}>
-                <Icon name="arrow-collapse-down" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>Range Min ({unitLabel(doseSettings.glucoseUnit)})</Text>
+              <View style={[styles.inputItem, { borderBottomWidth: 1, borderBottomColor: theme.colors.border }]}>
+                <View style={styles.inputItemLeft}>
+                  <Icon name="arrow-collapse-down" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
+                  <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>Range Min ({unitLabel(doseSettings.glucoseUnit)})</Text>
+                </View>
+                <TextInput
+                  style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
+                  value={rangeMin}
+                  onChangeText={handleGlucoseChange(setRangeMin, 'targetRangeMin')}
+                  keyboardType="numeric"
+                  placeholder="70"
+                  placeholderTextColor={theme.colors.text.secondary}
+                />
               </View>
-              <TextInput
-                style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
-                value={rangeMin}
-                onChangeText={handleGlucoseChange(setRangeMin, 'targetRangeMin')}
-                keyboardType="numeric"
-                placeholder="70"
-                placeholderTextColor={theme.colors.text.secondary}
-              />
-            </View>
-            <View style={styles.inputItem}>
-              <View style={styles.inputItemLeft}>
-                <Icon name="arrow-collapse-up" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
-                <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>Range Max ({unitLabel(doseSettings.glucoseUnit)})</Text>
+              <View style={styles.inputItem}>
+                <View style={styles.inputItemLeft}>
+                  <Icon name="arrow-collapse-up" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
+                  <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>Range Max ({unitLabel(doseSettings.glucoseUnit)})</Text>
+                </View>
+                <TextInput
+                  style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
+                  value={rangeMax}
+                  onChangeText={handleGlucoseChange(setRangeMax, 'targetRangeMax')}
+                  keyboardType="numeric"
+                  placeholder="180"
+                  placeholderTextColor={theme.colors.text.secondary}
+                />
               </View>
-              <TextInput
-                style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
-                value={rangeMax}
-                onChangeText={handleGlucoseChange(setRangeMax, 'targetRangeMax')}
-                keyboardType="numeric"
-                placeholder="180"
-                placeholderTextColor={theme.colors.text.secondary}
-              />
             </View>
-          </View>
+          </GlassCard>
         </View>
 
         {/* Insulin Parameters */}
@@ -296,42 +296,44 @@ export const SettingsScreen = (): React.JSX.Element => {
           <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
             Insulin Parameters
           </Text>
-          <View style={[styles.sectionContent, { backgroundColor: theme.colors.card }, theme.shadows.sm]}>
-            <View style={[styles.inputItem, { borderBottomWidth: 1, borderBottomColor: theme.colors.border }]}>
-              <View style={styles.inputItemLeft}>
-                <Icon name="food-apple" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
-                <View>
-                  <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>ICR (g / unit)</Text>
-                  <Text style={[styles.inputHint, { color: theme.colors.text.secondary }]}>Insulin-to-Carb Ratio</Text>
+          <GlassCard>
+            <View style={styles.sectionInner}>
+              <View style={[styles.inputItem, { borderBottomWidth: 1, borderBottomColor: theme.colors.border }]}>
+                <View style={styles.inputItemLeft}>
+                  <Icon name="food-apple" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
+                  <View>
+                    <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>ICR (g / unit)</Text>
+                    <Text style={[styles.inputHint, { color: theme.colors.text.secondary }]}>Insulin-to-Carb Ratio</Text>
+                  </View>
                 </View>
+                <TextInput
+                  style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
+                  value={icr}
+                  onChangeText={handleChange(setIcr, 'icr')}
+                  keyboardType="numeric"
+                  placeholder="10"
+                  placeholderTextColor={theme.colors.text.secondary}
+                />
               </View>
-              <TextInput
-                style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
-                value={icr}
-                onChangeText={handleChange(setIcr, 'icr')}
-                keyboardType="numeric"
-                placeholder="10"
-                placeholderTextColor={theme.colors.text.secondary}
-              />
-            </View>
-            <View style={styles.inputItem}>
-              <View style={styles.inputItemLeft}>
-                <Icon name="needle" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
-                <View>
-                  <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>ISF ({unitLabel(doseSettings.glucoseUnit)} / unit)</Text>
-                  <Text style={[styles.inputHint, { color: theme.colors.text.secondary }]}>Insulin Sensitivity Factor</Text>
+              <View style={styles.inputItem}>
+                <View style={styles.inputItemLeft}>
+                  <Icon name="needle" size={20} color={theme.colors.primary[500]} style={styles.settingIcon} />
+                  <View>
+                    <Text style={[styles.settingLabel, { color: theme.colors.text.primary }]}>ISF ({unitLabel(doseSettings.glucoseUnit)} / unit)</Text>
+                    <Text style={[styles.inputHint, { color: theme.colors.text.secondary }]}>Insulin Sensitivity Factor</Text>
+                  </View>
                 </View>
+                <TextInput
+                  style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
+                  value={isf}
+                  onChangeText={handleGlucoseChange(setIsf, 'isf')}
+                  keyboardType="numeric"
+                  placeholder="50"
+                  placeholderTextColor={theme.colors.text.secondary}
+                />
               </View>
-              <TextInput
-                style={[styles.inlineInput, { color: theme.colors.text.primary, borderColor: theme.colors.primary[200] ?? '#A7F3D0' }]}
-                value={isf}
-                onChangeText={handleGlucoseChange(setIsf, 'isf')}
-                keyboardType="numeric"
-                placeholder="50"
-                placeholderTextColor={theme.colors.text.secondary}
-              />
             </View>
-          </View>
+          </GlassCard>
         </View>
 
         {settingsSections.slice(2).map((section, sectionIndex) => (
@@ -339,64 +341,60 @@ export const SettingsScreen = (): React.JSX.Element => {
             <Text style={[styles.sectionTitle, { color: theme.colors.text.secondary }]}>
               {section.title}
             </Text>
-            <View
-              style={[
-                styles.sectionContent,
-                { backgroundColor: theme.colors.card },
-                theme.shadows.sm,
-              ]}
-            >
-              {section.items.map((item, itemIndex) => (
-                <TouchableOpacity
-                  key={itemIndex}
-                  style={[
-                    styles.settingItem,
-                    itemIndex < section.items.length - 1 && {
-                      borderBottomWidth: 1,
-                      borderBottomColor: theme.colors.border,
-                    },
-                  ]}
-                  onPress={item.onPress}
-                >
-                  <View style={styles.settingLeft}>
-                    <Icon
-                      name={item.icon}
-                      size={20}
-                      color={theme.colors.primary[500]}
-                      style={styles.settingIcon}
-                    />
-                    <Text
-                      style={[styles.settingLabel, { color: theme.colors.text.primary }]}
-                    >
-                      {item.label}
-                    </Text>
-                  </View>
-                  <View style={styles.settingRight}>
-                    {item.value && (
+            <GlassCard>
+              <View style={styles.sectionInner}>
+                {section.items.map((item, itemIndex) => (
+                  <TouchableOpacity
+                    key={itemIndex}
+                    style={[
+                      styles.settingItem,
+                      itemIndex < section.items.length - 1 && {
+                        borderBottomWidth: 1,
+                        borderBottomColor: theme.colors.border,
+                      },
+                    ]}
+                    onPress={item.onPress}
+                  >
+                    <View style={styles.settingLeft}>
+                      <Icon
+                        name={item.icon}
+                        size={20}
+                        color={theme.colors.primary[500]}
+                        style={styles.settingIcon}
+                      />
                       <Text
-                        style={[
-                          styles.settingValue,
-                          { color: theme.colors.text.secondary },
-                        ]}
+                        style={[styles.settingLabel, { color: theme.colors.text.primary }]}
                       >
-                        {item.value}
+                        {item.label}
                       </Text>
-                    )}
-                    <Icon
-                      name="chevron-right"
-                      size={20}
-                      color={theme.colors.text.disabled}
-                    />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    </View>
+                    <View style={styles.settingRight}>
+                      {item.value && (
+                        <Text
+                          style={[
+                            styles.settingValue,
+                            { color: theme.colors.text.secondary },
+                          ]}
+                        >
+                          {item.value}
+                        </Text>
+                      )}
+                      <Icon
+                        name="chevron-right"
+                        size={20}
+                        color={theme.colors.text.disabled}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </GlassCard>
           </View>
         ))}
 
         {/* Logout Button */}
         <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: theme.colors.error }]}
+          style={[styles.logoutButton, { backgroundColor: '#F87171' }]}
           onPress={confirmLogout}
         >
           <Icon name="logout" size={20} color="#fff" />
@@ -437,7 +435,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginLeft: 16,
   },
-  sectionContent: {
+  sectionInner: {
     borderRadius: 12,
     overflow: 'hidden',
   },

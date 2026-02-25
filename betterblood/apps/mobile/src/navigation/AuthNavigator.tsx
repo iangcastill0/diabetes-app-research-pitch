@@ -15,7 +15,7 @@ export const AuthNavigator = (): React.JSX.Element => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        cardStyle: { backgroundColor: '#fff' },
+        cardStyle: { backgroundColor: '#080C14' },
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
